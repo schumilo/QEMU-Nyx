@@ -126,7 +126,7 @@ bool apply_capabilities(CPUState *cpu){
 
 	debug_fprintf(stderr, "%s: agent supports timeout detection: %d\n", __func__, GET_GLOBAL_STATE()->agent_config.agent_timeout_detection);
 	debug_fprintf(stderr, "%s: agent supports only-reload mode: %d\n", __func__, !!!GET_GLOBAL_STATE()->agent_config.agent_non_reload_mode);
-	debug_fprintf(stderr, "%s: agent supports compile-time tracing: %d\n", __func__, GET_GLOBAL_STATE()->agent_non_reload_mode.agent_tracing );
+	debug_fprintf(stderr, "%s: agent supports compile-time tracing: %d\n", __func__, GET_GLOBAL_STATE()->agent_config.agent_tracing );
 
 	if(GET_GLOBAL_STATE()->agent_config.agent_tracing){
 		GET_GLOBAL_STATE()->pt_trace_mode = false;
@@ -140,11 +140,6 @@ bool apply_capabilities(CPUState *cpu){
 		debug_printf("GET_GLOBAL_STATE()->shared_bitmap_size: %x\n", GET_GLOBAL_STATE()->shared_bitmap_size);
 		debug_printf("GET_GLOBAL_STATE()->config_cr3: %lx\n", GET_GLOBAL_STATE()->config_cr3);
 		debug_printf("--------------------------\n");
-
-		if (GET_GLOBAL_STATE()->input_buffer_size != GET_GLOBAL_STATE()->shared_payload_buffer_size){
-			resize_shared_memory(GET_GLOBAL_STATE()->input_buffer_size, &GET_GLOBAL_STATE()->shared_payload_buffer_size, NULL, GET_GLOBAL_STATE()->shared_payload_buffer_fd);
-			GET_GLOBAL_STATE()->shared_payload_buffer_size = GET_GLOBAL_STATE()->input_buffer_size;
-		}
 
 		if(GET_GLOBAL_STATE()->agent_config.trace_buffer_vaddr&0xfff){
 			fprintf(stderr, "[QEMU-Nyx] Error: guest's trace bitmap v_addr (0x%lx) is not page aligned!\n", GET_GLOBAL_STATE()->agent_config.trace_buffer_vaddr);
@@ -176,9 +171,17 @@ bool apply_capabilities(CPUState *cpu){
 		set_cap_agent_ijon_trace_bitmap(GET_GLOBAL_STATE()->auxilary_buffer, true);
 	}
 
-
+	/* child has not yet resized its input buffer */
+	if (GET_GLOBAL_STATE()->input_buffer_size != GET_GLOBAL_STATE()->shared_payload_buffer_size){
+		resize_shared_memory(GET_GLOBAL_STATE()->input_buffer_size, &GET_GLOBAL_STATE()->shared_payload_buffer_size, NULL, GET_GLOBAL_STATE()->shared_payload_buffer_fd);
+		GET_GLOBAL_STATE()->shared_payload_buffer_size = GET_GLOBAL_STATE()->input_buffer_size;
+	}
+	
 	/* pass the actual input buffer size to the front-end */
 	GET_GLOBAL_STATE()->auxilary_buffer->capabilites.agent_input_buffer_size = GET_GLOBAL_STATE()->shared_payload_buffer_size;
+
+	/* enable non-PT redqueen cap */
+	set_cap_agent_redqueen(GET_GLOBAL_STATE()->auxilary_buffer, GET_GLOBAL_STATE()->agent_config.agent_redqueen != 0);
 
 	return true;
 }

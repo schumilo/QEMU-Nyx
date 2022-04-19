@@ -54,6 +54,30 @@ static void volatile_memcpy(void* dst, void* src, size_t size){
   }
 }
 
+static void enable_redquee_mode(void){
+  GET_GLOBAL_STATE()->in_redqueen_reload_mode = true;
+  if(GET_GLOBAL_STATE()->pt_trace_mode){
+    GET_GLOBAL_STATE()->redqueen_enable_pending = true;
+    GET_GLOBAL_STATE()->redqueen_instrumentation_mode = REDQUEEN_LIGHT_INSTRUMENTATION;
+  }
+  else{
+    assert(GET_GLOBAL_STATE()->shared_payload_buffer_ptr);
+    ((nyx_input_t*)GET_GLOBAL_STATE()->shared_payload_buffer_ptr)->redqueen_run = 1;
+  }
+}
+
+static void disable_redqueen_mode(void){
+  GET_GLOBAL_STATE()->in_redqueen_reload_mode = false;
+  if(GET_GLOBAL_STATE()->pt_trace_mode){
+    GET_GLOBAL_STATE()->redqueen_disable_pending = true;
+    GET_GLOBAL_STATE()->redqueen_instrumentation_mode = REDQUEEN_NO_INSTRUMENTATION;
+  }
+  else{
+    assert(GET_GLOBAL_STATE()->shared_payload_buffer_ptr);
+    ((nyx_input_t*)GET_GLOBAL_STATE()->shared_payload_buffer_ptr)->redqueen_run = 0;
+  }
+}
+
 void init_auxiliary_buffer(auxilary_buffer_t* auxilary_buffer){
   debug_fprintf(stderr, "%s\n", __func__);
   volatile_memset((void*) auxilary_buffer, 0, sizeof(auxilary_buffer_t));
@@ -83,17 +107,13 @@ void check_auxiliary_config_buffer(auxilary_buffer_t* auxilary_buffer, auxilary_
     if(aux_byte){
       /* enable redqueen mode */
       if(aux_byte != shadow_config->redqueen_mode){
-        GET_GLOBAL_STATE()->in_redqueen_reload_mode = true;
-        GET_GLOBAL_STATE()->redqueen_enable_pending = true;
-	      GET_GLOBAL_STATE()->redqueen_instrumentation_mode = REDQUEEN_LIGHT_INSTRUMENTATION;
+        enable_redquee_mode();
       }
     }
     else{
       /* disable redqueen mode */
       if(aux_byte != shadow_config->redqueen_mode){
-        GET_GLOBAL_STATE()->in_redqueen_reload_mode = false;
-        GET_GLOBAL_STATE()->redqueen_disable_pending = true;
-	      GET_GLOBAL_STATE()->redqueen_instrumentation_mode = REDQUEEN_NO_INSTRUMENTATION;
+        disable_redqueen_mode();
       }
     }
 
@@ -273,4 +293,8 @@ void set_result_bb_coverage(auxilary_buffer_t* auxilary_buffer, uint32_t value){
   if (value != auxilary_buffer->result.bb_coverage){
     VOLATILE_WRITE_32(auxilary_buffer->result.bb_coverage, value);
   }
+}
+
+void set_cap_agent_redqueen(auxilary_buffer_t* auxilary_buffer, bool value){
+  VOLATILE_WRITE_8(auxilary_buffer->capabilites.agent_redqueen, value);
 }

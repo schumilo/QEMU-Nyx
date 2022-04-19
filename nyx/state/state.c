@@ -125,6 +125,7 @@ void state_init_global(void){
 
     global_state.shared_payload_buffer_fd = 0;
     global_state.shared_payload_buffer_size = 0;
+    global_state.shared_payload_buffer_ptr = NULL;
 
     global_state.shared_ijon_bitmap_fd = 0;
     global_state.shared_ijon_bitmap_size = 0;

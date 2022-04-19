@@ -290,7 +290,16 @@ void resize_shared_memory(uint32_t new_size, uint32_t* shm_size, void** shm_ptr,
 
 bool remap_payload_buffer(uint64_t virt_guest_addr, CPUState *cpu){    
     assert(GET_GLOBAL_STATE()->shared_payload_buffer_fd && GET_GLOBAL_STATE()->shared_payload_buffer_size);
+
+    /* size must be page-aligned */
+    if ((GET_GLOBAL_STATE()->shared_payload_buffer_size & 0xFFF) != 0){
+	    GET_GLOBAL_STATE()->shared_payload_buffer_size += 0x1000 - (GET_GLOBAL_STATE()->shared_payload_buffer_size & 0xFFF);
+    }
     assert(GET_GLOBAL_STATE()->shared_payload_buffer_size % x86_64_PAGE_SIZE == 0);
+
+    GET_GLOBAL_STATE()->shared_payload_buffer_ptr = mmap(NULL, GET_GLOBAL_STATE()->shared_payload_buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED, GET_GLOBAL_STATE()->shared_payload_buffer_fd, 0);
+    assert(GET_GLOBAL_STATE()->shared_payload_buffer_ptr != MAP_FAILED);
+
     RAMBlock *block;
     refresh_kvm_non_dirty(cpu);
 

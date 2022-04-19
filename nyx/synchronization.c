@@ -277,12 +277,16 @@ void synchronization_lock(void){
 
 	//last_timeout = false;
 
-	if(unlikely(GET_GLOBAL_STATE()->in_redqueen_reload_mode)) {
+	if(unlikely(GET_GLOBAL_STATE()->in_redqueen_reload_mode) && GET_GLOBAL_STATE()->pt_trace_mode) {
 			fsync_redqueen_files();		
 	}
 
 	if (unlikely(GET_GLOBAL_STATE()->trace_mode)) {
 		redqueen_trace_flush();
+	}
+
+	if (GET_GLOBAL_STATE()->starved == true){
+		set_success_auxiliary_result_buffer(GET_GLOBAL_STATE()->auxilary_buffer, 2);
 	}
 
 	interface_send_char(NYX_INTERFACE_PING);
@@ -292,11 +296,7 @@ void synchronization_lock(void){
 
 	check_auxiliary_config_buffer(GET_GLOBAL_STATE()->auxilary_buffer, &GET_GLOBAL_STATE()->shadow_config);
 
-	//set_success_auxiliary_result_buffer(GET_GLOBAL_STATE()->auxilary_buffer, 1);
-	if (GET_GLOBAL_STATE()->starved == true)
-		set_success_auxiliary_result_buffer(GET_GLOBAL_STATE()->auxilary_buffer, 2);
-	else
-		set_success_auxiliary_result_buffer(GET_GLOBAL_STATE()->auxilary_buffer, 1);
+	set_success_auxiliary_result_buffer(GET_GLOBAL_STATE()->auxilary_buffer, 1);
 
 	GET_GLOBAL_STATE()->pt_trace_size = 0;
 	/*

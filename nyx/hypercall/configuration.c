@@ -3,6 +3,7 @@
 #include "nyx/hypercall/configuration.h"
 #include "nyx/memory_access.h"
 #include "nyx/helpers.h"
+#include "nyx/debug.h"
 
 void handle_hypercall_kafl_get_host_config(struct kvm_run *run, CPUState *cpu, uint64_t hypercall_arg){
 	uint64_t vaddr = hypercall_arg;

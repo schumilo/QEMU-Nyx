@@ -16,7 +16,7 @@ typedef uint8_t mem_mode_t;
 #define NYX_AGENT_MAGIC 0x4178794e
 
 #define NYX_HOST_VERSION 2 
-#define NYX_AGENT_VERSION 2
+#define NYX_AGENT_VERSION 3
 
 typedef struct host_config_s{
 	uint32_t host_magic;
@@ -45,6 +45,8 @@ typedef struct agent_config_s{
 	uint8_t pt_cr3_mode;
 
 	uint8_t dump_payloads; /* set by hypervisor */
+	uint8_t agent_redqueen;		/* agent supports compile-time redqueen (e.g. CMPLOG) */
+
 	/* more to come */
 } __attribute__((packed)) agent_config_t;
 
@@ -53,3 +55,15 @@ enum nyx_cr3_mode {
 	cr3_current_offset,		/* current cr3 + offset taken from agent_config */
 	cr3_absolute,			/* absolute cr3 value taken from agent_config */
 };
+
+typedef struct{
+	/* 32 Byte Header */
+	int32_t size;
+	uint8_t redqueen_run;
+	uint8_t padding[27];
+
+	/* Fuzzing Input */
+	uint8_t data[];
+} nyx_input_t;
+
+#define NYX_INPUT_BUFFER_HEADER_SIZE 32
