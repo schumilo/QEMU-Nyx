@@ -769,14 +769,12 @@ static void handle_hypercall_kafl_dump_file(struct kvm_run *run, CPUState *cpu, 
 	memset((void*)&file_obj, 0, sizeof(kafl_dump_file_t));
 
 	if (!read_virtual_memory(vaddr, (uint8_t*)&file_obj, sizeof(kafl_dump_file_t), cpu)){
-		fprintf(stderr, "Failed to read file_obj in %s. Skipping..\n", __func__);
-		goto err_out1;
+		nyx_abort_format("%s: Failed to read file_obj in...\n", __func__);
 	}
 
 	if (file_obj.file_name_str_ptr != 0) {
 		if (!read_virtual_memory(file_obj.file_name_str_ptr, (uint8_t*)filename, sizeof(filename)-1, cpu)) {
-			fprintf(stderr, "Failed to read file_name_str_ptr in %s. Skipping..\n", __func__);
-			goto err_out1;
+			nyx_abort_format("%s: Failed to read file_name_str_ptr...\n", __func__);
 		}
 		filename[sizeof(filename)-1] = 0;
 	}
@@ -824,18 +822,21 @@ static void handle_hypercall_kafl_dump_file(struct kvm_run *run, CPUState *cpu, 
 	while (bytes > 0) {
 
 		if (bytes >= PAGE_SIZE) {
-			read_virtual_memory(file_obj.data_ptr+pos, (uint8_t*)page, PAGE_SIZE, cpu);
+			if(read_virtual_memory(file_obj.data_ptr+pos, (uint8_t*)page, PAGE_SIZE, cpu) == false){
+				nyx_abort_format("%s: Failed to read data (offset: 0x%x / filename: %s)...", __func__, pos, filename);
+			}
 			written = fwrite(page, 1, PAGE_SIZE, f);
 		}
 		else {
-			read_virtual_memory(file_obj.data_ptr+pos, (uint8_t*)page, bytes, cpu);
+			if(read_virtual_memory(file_obj.data_ptr+pos, (uint8_t*)page, bytes, cpu) == false){
+				nyx_abort_format("%s: Failed to read data (offset: 0x%x / filename: %s)...", __func__, pos, filename);
+			}
 			written = fwrite(page, 1, bytes, f);
 			break;
 		}
 
 		if (!written) {
-			fprintf(stderr, "Error in %s(%s): %s\n", host_path, __func__, strerror(errno));
-			goto err_out2;
+			nyx_abort_format("%s: Error processing path %s: %s\n", __func__, host_path, strerror(errno));
 		}
 
 		bytes -= written;
@@ -844,9 +845,6 @@ static void handle_hypercall_kafl_dump_file(struct kvm_run *run, CPUState *cpu, 
 	}
 
 
-err_out2:
-	free(page);
-	fclose(f);
 err_out1:
 	free(host_path);
 }

@@ -21,6 +21,17 @@ void nyx_abort(char* msg){
 	exit(1);
 }
 
+void nyx_abort_format(const char * format, ...){
+	char msg[1024] = {0};
+
+	va_list args;
+	va_start(args, format);
+	vsnprintf((char*)msg, 1024, format, args);
+	va_end(args);
+
+	nyx_abort(msg);
+}
+
 bool is_called_in_fuzzing_mode(const char* hypercall){
 	if(GET_GLOBAL_STATE()->in_fuzzing_mode){
 		char* tmp = NULL;
