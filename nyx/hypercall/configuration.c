@@ -73,7 +73,7 @@ void handle_hypercall_kafl_set_agent_config(struct kvm_run *run, CPUState *cpu, 
 
 		GET_GLOBAL_STATE()->input_buffer_size = GET_GLOBAL_STATE()->shared_payload_buffer_size;
 		if (config.input_buffer_size){
-			abort();
+			nyx_abort((char*)"guest initiated input buffer resize is not yet implemented...");
 		}
 
 		if(apply_capabilities(cpu) == false){
