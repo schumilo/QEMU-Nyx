@@ -328,7 +328,7 @@ bool remap_payload_buffer(uint64_t virt_guest_addr, CPUState *cpu){
                     assert(false);
                 }
 
-                memset((block->host) + phys_addr_ram_offset, 0xab, 0x1000);
+                memset((block->host) + phys_addr_ram_offset, 0x00, 0x1000);
 
                 if(GET_GLOBAL_STATE()->protect_payload_buffer){
                     mprotect((block->host) + phys_addr_ram_offset, 0x1000, PROT_READ);
