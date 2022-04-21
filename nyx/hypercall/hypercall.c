@@ -844,7 +844,9 @@ static void handle_hypercall_kafl_dump_file(struct kvm_run *run, CPUState *cpu, 
 
 	}
 
-
+	free(page);
+	fclose(f);
+	
 err_out1:
 	free(host_path);
 }
