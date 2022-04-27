@@ -84,7 +84,7 @@ void handle_hypercall_kafl_nested_prepare(struct kvm_run *run, CPUState *cpu, ui
 #ifdef DEBUG_NESTED_HYPERCALLS
 	printf("============> %s\n", __func__);
 #endif
-	kvm_arch_get_registers(cpu);
+	nyx_get_registers(cpu);
 
 	if((uint64_t)run->hypercall.args[0]){
 		QEMU_PT_PRINTF(CORE_PREFIX, "handle_hypercall_kafl_nested_prepare:\t NUM:\t%lx\t ADDRESS:\t%lx\t CR3:\t%lx", (uint64_t)run->hypercall.args[0], (uint64_t)run->hypercall.args[1], (uint64_t)run->hypercall.args[2]);
@@ -145,7 +145,7 @@ void handle_hypercall_kafl_nested_release(struct kvm_run *run, CPUState *cpu, ui
 
 	if((rcount%100) == 0){
 
-			kvm_arch_get_registers(cpu);
+			nyx_get_registers(cpu);
 			//printf("TRY %s %lx %lx %lx (%d)\n", __func__, get_rip(cpu), get_nested_guest_rip(cpu), get_nested_host_rip(cpu), rcount);
 
 	//		sleep(rand()%4);
@@ -165,7 +165,7 @@ void handle_hypercall_kafl_nested_release(struct kvm_run *run, CPUState *cpu, ui
 		//	printf("DONE %s\n", __func__);
 
 		/*
-		kvm_arch_get_registers(cpu);
+		nyx_get_registers(cpu);
 		fprintf(stderr, "RELOADING DUDE %d!\n", rcount);
 		qemu_mutex_lock_iothread();
 		fast_reload_restore(get_fast_reload_snapshot());
@@ -265,7 +265,7 @@ void handle_hypercall_kafl_nested_acquire(struct kvm_run *run, CPUState *cpu, ui
 		fast_reload_restore(get_fast_reload_snapshot());
 		qemu_mutex_unlock_iothread();
 
-		kvm_arch_get_registers(cpu);
+		nyx_get_registers(cpu);
 
 		X86CPU *x86_cpu = X86_CPU(cpu);
 	  CPUX86State *env = &x86_cpu->env;
@@ -287,7 +287,7 @@ void handle_hypercall_kafl_nested_acquire(struct kvm_run *run, CPUState *cpu, ui
 	synchronization_lock();
 	
 
-			kvm_arch_get_registers(cpu);
+	nyx_get_registers(cpu);
 
 	uint64_t cr3 = get_nested_host_cr3(cpu) & 0xFFFFFFFFFFFFF000ULL;
 	//fprintf(stderr, "CR3 -> 0x%lx\n", cr3);

@@ -159,7 +159,7 @@ static inline void perform_task_no_block_mode(fast_vm_reload_sync_t* self, FastR
 		  kvm_arch_put_registers(cpu, KVM_PUT_FULL_STATE);
     case REQUEST_SAVE_SNAPSHOT_ROOT:
 
-      kvm_arch_get_registers(cpu);
+      nyx_get_registers(cpu);
       vm_stop(RUN_STATE_SAVE_VM);
       create_root_snapshot();
 
@@ -187,14 +187,14 @@ static inline void perform_task_no_block_mode(fast_vm_reload_sync_t* self, FastR
       break;
 
     case REQUEST_SAVE_SNAPSHOT_ROOT_NESTED_FIX_RIP:
-      kvm_arch_get_registers(cpu);
+      nyx_get_registers(cpu);
 
       adjust_rip(env, get_fast_reload_snapshot());
       set_nested_rip(cpu, env->eip);
 		  kvm_arch_put_registers(cpu, KVM_PUT_FULL_STATE);
 
     //case REQUEST_SAVE_SNAPSHOT_ROOT_NESTED:
-      kvm_arch_get_registers(cpu);
+      nyx_get_registers(cpu);
       vm_stop(RUN_STATE_SAVE_VM);
       create_root_snapshot();
 
@@ -269,7 +269,7 @@ void request_fast_vm_reload(fast_vm_reload_sync_t* self, FastReloadRequest reque
 
   if(self->mode == RELOAD_MODE_NO_BLOCK){
     CPUState* cpu = qemu_get_cpu(0);
-    kvm_arch_get_registers(cpu);
+    nyx_get_registers(cpu);
     //perform_task(self, request);
     perform_task_no_block_mode(self, request);
   }
@@ -305,7 +305,7 @@ bool check_if_relood_request_exists_pre(fast_vm_reload_sync_t* self){
     X86CPU *x86_cpu = X86_CPU(cpu);
 	  CPUX86State *env = &x86_cpu->env;
 
-    kvm_arch_get_registers(cpu);
+    nyx_get_registers(cpu);
 
     switch(self->current_request){
       case REQUEST_VOID:

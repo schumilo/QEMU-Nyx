@@ -2070,6 +2070,25 @@ static X86CPUDefinition builtin_x86_defs[] = {
                     { /* end of list */ }
                 }
             },
+            {
+                .version = 3,
+                .alias = "NYX64-TCG",
+                .props = (PropValue[]) {
+                    { "vmx", "off" },
+                    { "vmx-ept", "off" },
+                    { "rtm", "off" },
+                    { "avx", "off" },
+                    { "avx2", "off" },
+                    { "hle", "off" },
+                    { "pcid", "off" },
+                    { "fma", "off" },
+                    { "x2apic", "off" },
+                    { "tsc-deadline", "off" },
+                    { "f16c", "off" },
+                    { "invpcid", "off" },
+                    { /* end of list */ }
+                }
+            },
             { /* end of list */ }
         }    
 

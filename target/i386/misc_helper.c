@@ -25,6 +25,10 @@
 #include "exec/cpu_ldst.h"
 #include "exec/address-spaces.h"
 
+#ifdef QEMU_NYX
+#include "nyx/hypercall/hypercall.h"
+#endif
+
 void helper_outb(CPUX86State *env, uint32_t port, uint32_t data)
 {
 #ifdef CONFIG_USER_ONLY
@@ -69,6 +73,14 @@ target_ulong helper_inw(CPUX86State *env, uint32_t port)
 
 void helper_outl(CPUX86State *env, uint32_t port, uint32_t data)
 {
+#ifdef QEMU_NYX
+    /* handle NYX hypercall via vmware backdoor */
+    if(port == 0x5658 && data == 0x8080801f){
+        handle_kafl_hypercall(NULL, qemu_get_cpu(0), env->regs[R_EBX]+100, env->regs[R_ECX]);
+        return;
+    }
+#endif
+
 #ifdef CONFIG_USER_ONLY
     fprintf(stderr, "outw: port=0x%04x, data=%08x\n", port, data);
 #else

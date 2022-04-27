@@ -54,6 +54,8 @@ along with QEMU-PT.  If not, see <http://www.gnu.org/licenses/>.
 #include "nyx/redqueen.h"
 #include "nyx/hypercall/configuration.h"
 #include "nyx/hypercall/debug.h"
+#include "nyx/helpers.h"
+
 
 //#define DEBUG_HPRINTF
 #define HPRINTF_SIZE	0x1000
@@ -95,7 +97,7 @@ bool setup_snapshot_once = false;
 bool handle_hypercall_kafl_next_payload(struct kvm_run *run, CPUState *cpu, uint64_t hypercall_arg){
 	//fprintf(stderr, "%s\n", __func__);
 /*
-	kvm_arch_get_registers(cpu);
+	nyx_get_registers(cpu);
 	X86CPU *x86_cpu = X86_CPU(cpu);
 	CPUX86State *env = &x86_cpu->env;
 
@@ -168,7 +170,7 @@ bool release_print_once_bool = true;
 static void acquire_print_once(CPUState *cpu){
 	if(acquire_print_once_bool){
 		acquire_print_once_bool = false;
-		kvm_arch_get_registers(cpu);
+		nyx_get_registers(cpu);
 		//X86CPU *x86_cpu = X86_CPU(cpu);
 		//CPUX86State *env = &x86_cpu->env;
 		debug_fprintf(stderr,  "handle_hypercall_kafl_acquire at:%lx\n", get_rip(cpu));
@@ -206,7 +208,7 @@ static void handle_hypercall_get_payload(struct kvm_run *run, CPUState *cpu, uin
 
 	if(hypercall_enabled && !setup_snapshot_once){
 			QEMU_PT_PRINTF(CORE_PREFIX, "Payload Address:\t%lx", hypercall_arg);
-			kvm_arch_get_registers(cpu);	
+			nyx_get_registers(cpu);	
 			CPUX86State *env = &(X86_CPU(cpu))->env;
 			GET_GLOBAL_STATE()->parent_cr3 = env->cr[3] & 0xFFFFFFFFFFFFF000ULL;
 			QEMU_PT_PRINTF(CORE_PREFIX, "Payload CR3:\t%lx", (uint64_t)GET_GLOBAL_STATE()->parent_cr3 );
@@ -223,7 +225,7 @@ static void handle_hypercall_get_payload(struct kvm_run *run, CPUState *cpu, uin
 }
 
 static void set_return_value(CPUState *cpu, uint64_t return_value){
-	kvm_arch_get_registers(cpu);	
+	nyx_get_registers(cpu);	
 	CPUX86State *env = &(X86_CPU(cpu))->env;
 	env->regs[R_EAX] =  return_value;
 	kvm_arch_put_registers(cpu, KVM_PUT_RUNTIME_STATE);	
@@ -236,7 +238,7 @@ static void handle_hypercall_kafl_req_stream_data(struct kvm_run *run, CPUState 
 		return;
 	}
 
-	kvm_arch_get_registers(cpu);	
+	nyx_get_registers(cpu);	
 	/* address has to be page aligned */
 	if((hypercall_arg&0xFFF) != 0){
 		debug_fprintf(stderr, "%s: ERROR -> address is not page aligned!\n", __func__);
@@ -267,7 +269,7 @@ static void handle_hypercall_kafl_req_stream_data_bulk(struct kvm_run *run, CPUS
 		return;
 	}
 
-	kvm_arch_get_registers(cpu);	
+	nyx_get_registers(cpu);	
 	/* address has to be page aligned */
 	if((hypercall_arg&0xFFF) != 0){
 		debug_fprintf(stderr, "%s: ERROR -> address is not page aligned!\n", __func__);
@@ -335,7 +337,7 @@ static void handle_hypercall_kafl_range_submit(struct kvm_run *run, CPUState *cp
 static void release_print_once(CPUState *cpu){
 	if(release_print_once_bool){
 		release_print_once_bool = false;
-		kvm_arch_get_registers(cpu);
+		nyx_get_registers(cpu);
 		//X86CPU *x86_cpu = X86_CPU(cpu);
 		//CPUX86State *env = &x86_cpu->env;
 		debug_fprintf(stderr,  "handle_hypercall_kafl_release at:%lx\n", get_rip(cpu));
@@ -369,7 +371,7 @@ struct kvm_set_guest_debug_data {
 
 void handle_hypercall_kafl_mtf(struct kvm_run *run, CPUState *cpu, uint64_t hypercall_arg){
 	//assert(false);
-	kvm_arch_get_registers_fast(cpu);
+	nyx_get_registers_fast(cpu);
 
 	fprintf(stderr, "%s --> %lx\n", __func__, get_rip(cpu));
 
@@ -385,7 +387,7 @@ void handle_hypercall_kafl_mtf(struct kvm_run *run, CPUState *cpu, uint64_t hype
 
 void handle_hypercall_kafl_page_dump_bp(struct kvm_run *run, CPUState *cpu, uint64_t hypercall_arg, uint64_t page){
 	//fprintf(stderr, "--> %s\n", __func__);
-	kvm_arch_get_registers_fast(cpu);
+	nyx_get_registers_fast(cpu);
 
 	debug_fprintf(stderr, "%s --> %lx\n", __func__, get_rip(cpu));
 
@@ -538,7 +540,7 @@ static void handle_hypercall_kafl_create_tmp_snapshot(struct kvm_run *run, CPUSt
 		pt_disable(qemu_get_cpu(0), false);
 
 		/*
-		kvm_arch_get_registers(cpu);
+		nyx_get_registers(cpu);
 		kvm_cpu_synchronize_state(cpu);
 		//fprintf(stderr, "%s: CREATE at %lx\n", __func__, get_rip(cpu));
 
@@ -834,7 +836,7 @@ static void handle_hypercall_kafl_persist_page_past_snapshot(struct kvm_run *run
 	}
 
 	CPUX86State *env = &(X86_CPU(cpu))->env;
-	kvm_arch_get_registers_fast(cpu);
+	nyx_get_registers_fast(cpu);
 	hwaddr phys_addr = (hwaddr) get_paging_phys_addr(cpu, env->cr[3], hypercall_arg&(~0xFFF));
 	assert(phys_addr != 0xffffffffffffffffULL);
 	fast_reload_blacklist_page(get_fast_reload_snapshot(), phys_addr);

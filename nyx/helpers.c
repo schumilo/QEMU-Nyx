@@ -15,6 +15,28 @@
 #include "nyx/debug.h"
 #include "nyx/helpers.h"
 
+bool tcg_mode = true;
+
+void enable_tcg_mode(void){
+	tcg_mode = true;
+}
+
+void disable_tcg_mode(void){
+	tcg_mode = true;
+}
+
+void nyx_get_registers(CPUState *cpu){
+	if(!tcg_mode){
+		kvm_arch_get_registers(cpu);
+	}
+}
+
+void nyx_get_registers_fast(CPUState *cpu){
+	if(!tcg_mode){
+		kvm_arch_get_registers_fast(cpu);
+	}
+}
+
 void nyx_abort(char* msg){
 	set_abort_reason_auxiliary_buffer(GET_GLOBAL_STATE()->auxilary_buffer, msg, strlen(msg));
 	synchronization_lock();

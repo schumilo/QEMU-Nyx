@@ -2,6 +2,11 @@
 
 #include "qemu/osdep.h"
 
+
+void enable_tcg_mode(void);
+void nyx_get_registers(CPUState *cpu);
+void nyx_get_registers_fast(CPUState *cpu);
+
 uint64_t get_rip(CPUState *cpu);
 
 typedef struct nyx_coverage_bitmap_copy_s{

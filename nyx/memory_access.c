@@ -42,7 +42,7 @@ static uint64_t get_48_paging_phys_addr(uint64_t cr3, uint64_t addr, bool read_f
 #define x86_64_PAGE_MASK        ~(x86_64_PAGE_SIZE - 1)
 
 mem_mode_t get_current_mem_mode(CPUState *cpu){
-	kvm_arch_get_registers(cpu);
+	nyx_get_registers(cpu);
 
 	X86CPU *cpux86 = X86_CPU(cpu);
 	CPUX86State *env = &cpux86->env;
@@ -129,13 +129,13 @@ static uint64_t get_paging_phys_addr_snapshot(CPUState *cpu, uint64_t cr3, uint6
 }
 
 bool read_physical_memory(uint64_t address, uint8_t* data, uint32_t size, CPUState *cpu){
-    kvm_arch_get_registers(cpu);
+    nyx_get_registers(cpu);
     cpu_physical_memory_read(address, data, size);
     return true;
 }
 
 bool write_physical_memory(uint64_t address, uint8_t* data, uint32_t size, CPUState *cpu){
-    kvm_arch_get_registers(cpu);
+    nyx_get_registers(cpu);
     cpu_physical_memory_write(address, data, size);
     return true;
 }
@@ -143,8 +143,8 @@ bool write_physical_memory(uint64_t address, uint8_t* data, uint32_t size, CPUSt
 static void refresh_kvm(CPUState *cpu){
     //int ret = 0;
     if (!cpu->vcpu_dirty) {
-        //kvm_arch_get_registers_fast(cpu);
-        kvm_arch_get_registers(cpu);
+        //nyx_get_registers_fast(cpu);
+        nyx_get_registers(cpu);
 
         //cpu->vcpu_dirty = true;
     }
@@ -152,8 +152,8 @@ static void refresh_kvm(CPUState *cpu){
 
 static void refresh_kvm_non_dirty(CPUState *cpu){
     if (!cpu->vcpu_dirty) {
-        kvm_arch_get_registers_fast(cpu);
-        //kvm_arch_get_registers(cpu);
+        nyx_get_registers_fast(cpu);
+        //nyx_get_registers(cpu);
     }
 }
 
@@ -815,7 +815,7 @@ bool read_virtual_memory(uint64_t address, uint8_t* data, uint32_t size, CPUStat
     
     uint64_t amount_copied = 0;
     
-    kvm_arch_get_registers_fast(cpu);
+    nyx_get_registers_fast(cpu);
     CPUX86State *env = &(X86_CPU(cpu))->env;
 
     // copy per page 
@@ -877,7 +877,7 @@ bool is_addr_mapped_cr3(uint64_t address, CPUState *cpu, uint64_t cr3){
 
 bool is_addr_mapped(uint64_t address, CPUState *cpu){
     CPUX86State *env = &(X86_CPU(cpu))->env;
-    kvm_arch_get_registers_fast(cpu);
+    nyx_get_registers_fast(cpu);
     return (get_paging_phys_addr(cpu, env->cr[3], address) != INVALID_ADDRESS);
 } 
 
@@ -911,7 +911,7 @@ bool dump_page_cr3_ht(uint64_t address, uint8_t* data, CPUState *cpu, uint64_t c
 
 bool dump_page_ht(uint64_t address, uint8_t* data, CPUState *cpu){
     CPUX86State *env = &(X86_CPU(cpu))->env;
-    kvm_arch_get_registers_fast(cpu);
+    nyx_get_registers_fast(cpu);
     hwaddr phys_addr = (hwaddr) get_paging_phys_addr(cpu, env->cr[3], address);
     int asidx = cpu_asidx_from_attrs(cpu, MEMTXATTRS_UNSPECIFIED);
     if(phys_addr == 0xffffffffffffffffULL || address_space_rw(cpu_get_address_space(cpu, asidx), phys_addr, MEMTXATTRS_UNSPECIFIED, data, 0x1000, 0)){

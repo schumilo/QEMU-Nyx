@@ -616,6 +616,11 @@ static void gen_check_io(DisasContext *s, MemOp ot, target_ulong cur_eip,
 {
     target_ulong next_eip;
 
+    /* dirty hack: accept user space requests to enable vmware hypercalls */
+    if (s->cpl != 0) {
+        return;
+    }
+
     if (s->pe && (s->cpl > s->iopl || s->vm86)) {
         tcg_gen_trunc_tl_i32(s->tmp2_i32, s->T0);
         switch (ot) {
