@@ -6117,8 +6117,7 @@ if test "$nyx" = "yes" ; then
   fi
 
   if test "$nyx_static" = "yes" ; then
-    LIBS="-L$PWD/capstone_v4/ -l:libcapstone.a -L$PWD/libxdc/ -l:libxdc.a -I$PWD/capstone_v4/include/ -I$PWD/libxdc/ $LIBS"
-    QEMU_INCLUDES=" -I$PWD/capstone_v4/include/ -I$PWD/libxdc/ $QEMU_INCLUDES"
+    LIBS="-l:libcapstone.a -l:libxdc.a $LIBS"
   else
     LIBS="-lcapstone -lxdc $LIBS"
   fi

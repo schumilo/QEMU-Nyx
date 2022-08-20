@@ -356,8 +356,8 @@ void handle_hypercall_kafl_release(struct kvm_run *run, CPUState *cpu, uint64_t 
 		if (init_state){
 			init_state = false;	
 		} else {
-			//printf(CORE_PREFIX, "Got STARVED notification (num=%llu)\n", run->hypercall.args[0]);
-			if (run->hypercall.args[0] > 0) {
+			//printf(CORE_PREFIX, "Got STARVED notification (num=%llu)\n", hypercall_arg);
+			if (hypercall_arg > 0) {
 				GET_GLOBAL_STATE()->starved = 1;
 			} else {
 				GET_GLOBAL_STATE()->starved = 0;
@@ -450,7 +450,7 @@ static void handle_hypercall_kafl_cr3(struct kvm_run *run, CPUState *cpu, uint64
 		}
 
 		cr3_value &= 0xFFFFFFFFFFFFF000ULL;
-		QEMU_PT_PRINTF(CORE_PREFIX, "CR3 address:\t\t%lx", cr3_value);
+		//QEMU_PT_PRINTF(CORE_PREFIX, "CR3 address:\t\t%lx", cr3_value);
 		pt_set_cr3(cpu, cr3_value, false);
 		if(GET_GLOBAL_STATE()->dump_page){
 			set_page_dump_bp(cpu, cr3_value, GET_GLOBAL_STATE()->dump_page_addr);
@@ -585,7 +585,7 @@ static void handle_hypercall_kafl_create_tmp_snapshot(struct kvm_run *run, CPUSt
 		//handle_hypercall_kafl_acquire(run, cpu);
 		//fprintf(stderr, "%s: CREATE DONE at %lx\n", __func__, get_rip(cpu));
 
-		handle_hypercall_kafl_release(run, cpu, (uint64_t)run->hypercall.args[0]);
+		handle_hypercall_kafl_release(run, cpu, hypercall_arg);
 	}
 	else{
 		//fprintf(stderr, "%s: LOAD Continue at %lx\n", __func__, get_rip(cpu));
